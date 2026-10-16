@@ -1,0 +1,35 @@
+{
+  "name": "legal-citation-skill",
+  "version": "1.0.0",
+  "description": "A skill for AI agents that writes, checks, and corrects U.S. legal citations — and never invents a page number.",
+  "type": "module",
+  "bin": {
+    "legal-citation-skill": "bin/install.mjs"
+  },
+  "files": [
+    "bin/",
+    "plugins/legal-citation/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "legal",
+    "law",
+    "citation",
+    "legal-writing",
+    "agent-skills",
+    "skill",
+    "claude",
+    "ai-agent"
+  ],
+  "author": "Nathan Covey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nathancovey/legal-citation-skill.git"
+  },
+  "homepage": "https://github.com/nathancovey/legal-citation-skill#readme"
+}

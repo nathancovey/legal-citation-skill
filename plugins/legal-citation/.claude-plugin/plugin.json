@@ -1,0 +1,8 @@
+{
+  "name": "legal-citation",
+  "version": "1.0.0",
+  "description": "Write, check, and correct U.S. legal citations — full and short case citations, Id., signals, parentheticals, quotations, and pincites — without ever inventing a page number.",
+  "author": {
+    "name": "Nathan Covey"
+  }
+}
