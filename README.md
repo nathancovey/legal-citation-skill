@@ -2,35 +2,48 @@
 
 A skill for AI agents that writes, checks, and corrects U.S. legal citations — full and short case citations, *Id.*, signals, explanatory parentheticals, quotations, pincites, and italics — for memos, briefs, and law review footnotes.
 
-Its first principle: **an agent must never invent a number.** Every volume, page, pincite, and year is traced to a source the agent can see, or left as `___` and flagged. The skill ships a tool that finds the reporter page of any passage in a PDF printout using star pagination (`*138`).
+Its first principle: **an agent must never invent a number.** Every volume, page, pincite, and year is traced to a source the agent can see, or left as `___` and flagged.
 
 ## Install
 
-### Claude Code
+```bash
+npx legal-citation-skill
+```
+
+That's it. Start a new session and your agent has the skill.
+
+**No Node.js?** On macOS or Linux, this needs nothing but `curl`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nathancovey/legal-citation-skill/main/install.sh | sh
+```
+
+**Using Claude on the web or desktop app?** Download [legal-citation.zip](https://github.com/nathancovey/legal-citation-skill/releases/latest/download/legal-citation.zip) and upload it under Skills in Claude's settings.
+
+<details>
+<summary>Options and other ways to install</summary>
+
+Both one-line installers put the skill in `~/.claude/skills/legal-citation`, where Claude Code finds it in every project. They take the same options. With `curl`, put them after `sh -s --`, for example `… | sh -s -- --project`.
+
+| Option | Effect |
+|---|---|
+| `--project` | Install to `./.claude/skills` — this project only |
+| `--dir <path>` | Install to another agent's skills folder |
+| `--force` | Replace an existing copy |
+| `--uninstall` | Remove it (`npx` only; otherwise delete the folder) |
+
+`bunx legal-citation-skill` and `pnpm dlx legal-citation-skill` work the same as `npx`.
+
+**Claude Code plugin manager** — installs through Claude Code and updates with `/plugin update`:
 
 ```
 /plugin marketplace add nathancovey/legal-citation-skill
 /plugin install legal-citation@legal-citation-skill
 ```
 
-### Any agent, with npx
+**Any other agent** — the skill is a plain folder in the open Agent Skills format: a `SKILL.md` plus `references/` and `scripts/` that load only when needed. Copy `plugins/legal-citation/skills/legal-citation` wherever your agent reads skills. For an agent without skill support, put `SKILL.md` in its instructions and give it read access to `references/`.
 
-```bash
-npx legal-citation-skill                     # ~/.claude/skills/legal-citation (all projects)
-npx legal-citation-skill --project           # ./.claude/skills/legal-citation (this project)
-npx legal-citation-skill --dir <skills-dir>  # any agent that reads a skills folder
-npx legal-citation-skill --uninstall         # remove it (same flags)
-```
-
-`bunx legal-citation-skill` and `pnpm dlx legal-citation-skill` work the same way. The installer has no dependencies and no install-time scripts.
-
-### Claude apps (claude.ai, desktop)
-
-Zip the `plugins/legal-citation/skills/legal-citation` folder and upload it under Skills in Claude's settings.
-
-### Other agents
-
-The skill is a plain folder in the open Agent Skills format: a `SKILL.md` with a name and description, plus `references/` and `scripts/` that the agent loads only when needed. Copy the folder wherever your agent reads skills, or use `--dir` above. For an agent without skill support, put `SKILL.md` in its instructions and give it read access to `references/`.
+</details>
 
 ## What's inside
 
@@ -59,7 +72,7 @@ python3 scripts/find_pincite.py packet.pdf "would have been free to leave"
 python3 scripts/find_pincite.py packet.pdf --markers
 ```
 
-It ignores line breaks, quote style, hyphenation, and the markers themselves. A passage that crosses a page break is reported as a range (`217–18`), and star pages restart for each opinion in a multi-case packet. To run the self-test: `pip install reportlab`, then `python3 scripts/test_find_pincite.py`.
+It finds the reporter page of a passage in a database printout using star pagination (`*138`). It ignores line breaks, quote style, hyphenation, and the markers themselves. A passage that crosses a page break is reported as a range (`217–18`), and star pages restart for each opinion in a multi-case packet. To run the self-test: `pip install reportlab`, then `python3 scripts/test_find_pincite.py`.
 
 ## Scope
 
