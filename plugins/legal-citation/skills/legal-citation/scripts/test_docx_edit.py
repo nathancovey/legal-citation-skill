@@ -18,6 +18,7 @@ import time
 import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+os.environ["LEGAL_CITATION_NO_UPDATE_CHECK"] = "1"  # tests never touch the network
 EDIT, READ = os.path.join(HERE, "docx_edit.py"), os.path.join(HERE, "docx_read.py")
 NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
 I = "<w:rPr><w:i/><w:iCs/></w:rPr>"

@@ -42,6 +42,13 @@ FOLD = str.maketrans({
 })
 
 
+try:  # an update notice must never stop the tool itself
+    from update_check import announce
+except Exception:  # noqa: BLE001
+    def announce():
+        pass
+
+
 def normalize(text, skip=()):
     """Fold text for matching; return it with a map back to source offsets."""
     out, where = [], []
@@ -177,3 +184,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    announce()

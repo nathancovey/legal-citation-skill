@@ -40,6 +40,15 @@ check("SKILL.md body stays under 500 lines", len(skill.splitlines()) < 500, len(
 for ref in sorted(set(re.findall(r"`((?:references|scripts)/[\w.-]+)`", skill))):
     check(f"{ref} exists", os.path.exists(os.path.join(ROOT, ref)))
 
+version = open(os.path.join(ROOT, "VERSION"), encoding="utf-8").read().strip()
+check("VERSION is a plain x.y.z version", bool(re.fullmatch(r"\d+\.\d+\.\d+", version)), version)
+repo = os.path.abspath(os.path.join(ROOT, "..", "..", "..", ".."))
+for manifest in ("package.json", "plugins/legal-citation/.claude-plugin/plugin.json"):
+    path = os.path.join(repo, manifest)
+    if os.path.exists(path):  # only when run from the source repository
+        found = re.search(r'"version":\s*"([^"]+)"', open(path, encoding="utf-8").read()).group(1)
+        check(f"VERSION matches {manifest}", found == version, f"{found} vs {version}")
+
 agent_specific = re.findall(r"\b(Claude Code|ChatGPT|Codex|Cursor|Gemini|Copilot)\b", skill.split("---", 2)[2])
 check("instructions don't assume a particular agent", not agent_specific, agent_specific)
 

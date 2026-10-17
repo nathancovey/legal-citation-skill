@@ -11,7 +11,7 @@
  *
  * No dependencies and no install-time scripts: nothing runs unless you run it.
  */
-import { cpSync, existsSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,16 +21,16 @@ const here = dirname(fileURLToPath(import.meta.url));
 const source = resolve(here, "..", "plugins", NAME, "skills", NAME);
 
 // Where each agent reads skills. `home` is the folder whose presence means the agent is installed.
-// Cursor has no per-user folder of its own: it also reads skills installed for Claude Code and Codex.
+// Cursor also reads the Claude Code and Codex folders, so it only gets its own copy when neither is present.
 const AGENTS = {
   claude: { label: "Claude Code", home: ".claude", global: ".claude/skills", project: ".claude/skills" },
   codex: { label: "OpenAI Codex", home: ".codex", global: ".codex/skills", project: ".agents/skills" },
-  cursor: { label: "Cursor", home: null, global: null, project: ".cursor/skills" },
+  cursor: { label: "Cursor", home: ".cursor", global: ".cursor/skills", project: ".cursor/skills" },
   gemini: { label: "Gemini CLI", home: ".gemini", global: ".gemini/skills", project: ".gemini/skills" },
   copilot: { label: "GitHub Copilot", home: ".copilot", global: ".copilot/skills", project: ".github/skills" },
   agents: { label: "shared .agents folder", home: null, global: ".agents/skills", project: ".agents/skills" },
 };
-const DETECTED = ["claude", "codex", "gemini", "copilot"];
+const DETECTED = ["claude", "codex", "cursor", "gemini", "copilot"];
 
 const USAGE = `Install the Legal Citation Skill for AI agents.
 
@@ -94,6 +94,11 @@ const project = flags.has("--project");
 let chosen = agents;
 if (!dir && !chosen.length) {
   chosen = DETECTED.filter((k) => existsSync(join(home, AGENTS[k].home)));
+  if (chosen.includes("cursor") && (chosen.includes("claude") || chosen.includes("codex"))) {
+    // A second copy would make Cursor load the skill twice.
+    chosen = chosen.filter((k) => k !== "cursor");
+    console.log("Cursor will use the copy installed for Claude Code or Codex.");
+  }
   if (!chosen.length) {
     fail("No supported agent found on this computer. Pick one with --agent, or give its skills folder with --dir.");
   }
@@ -106,9 +111,7 @@ if (dir) {
   for (const key of chosen) {
     const a = AGENTS[key];
     const rel = project ? a.project : a.global;
-    if (!rel) {
-      fail(`${a.label} has no per-user skills folder of its own; it reads skills installed for Claude Code or Codex. Use --project to install into this project.`);
-    }
+    if (!rel) fail(`${a.label} has no per-user skills folder; use --project to install into this project.`);
     const folder = project ? resolve(rel) : join(home, rel);
     targets.set(folder, [...(targets.get(folder) || []), a.label]);
   }
@@ -146,7 +149,8 @@ for (const [root, labels] of targets) {
     }
     rmSync(target, { recursive: true });
   }
-  cpSync(source, target, { recursive: true });
+  cpSync(source, target, { recursive: true, filter: (p) => !/(\.update-check\.json|\.installed-by)$/.test(p) });
+  writeFileSync(join(target, ".installed-by"), "npx\n"); // lets the update notice show the right command
   console.log(`Installed for ${who}: ${target}`);
 }
 

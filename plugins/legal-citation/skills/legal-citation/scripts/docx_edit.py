@@ -75,6 +75,13 @@ FIELDS = {"find": str, "target": str, "in": str, "occurrence": int, "all": bool,
 NOT_AUTHORS = {"claude", "assistant", "ai", "chatgpt", "copilot", "agent"}
 
 
+try:  # an update notice must never stop the tool itself
+    from update_check import announce
+except Exception:  # noqa: BLE001
+    def announce():
+        pass
+
+
 class EditError(Exception):
     pass
 
@@ -433,3 +440,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    announce()

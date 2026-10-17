@@ -47,8 +47,8 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-# Where each agent reads skills. Cursor has no per-user folder of its own;
-# it also reads skills installed for Claude Code and Codex.
+# Where each agent reads skills. Cursor also reads the Claude Code and Codex
+# folders, so it only gets its own copy when neither is present.
 folder_for() {
   if [ "$project" -eq 1 ]; then
     case "$1" in
@@ -65,7 +65,7 @@ folder_for() {
       gemini) echo "$HOME/.gemini/skills" ;;
       copilot) echo "$HOME/.copilot/skills" ;;
       agents) echo "$HOME/.agents/skills" ;;
-      cursor) echo "" ;;
+      cursor) echo "$HOME/.cursor/skills" ;;
     esac
   fi
 }
@@ -79,14 +79,20 @@ if [ -n "$dir" ]; then
   add_target "$dir"
 else
   if [ -z "$agents" ]; then
-    for a in claude codex gemini copilot; do
+    for a in claude codex cursor gemini copilot; do
       [ -d "$HOME/.$a" ] && agents="$agents $a"
     done
+    case "$agents" in
+      *claude* | *codex*)
+        case "$agents" in *cursor*)
+          agents=$(echo "$agents" | sed 's/ cursor//')
+          echo "Cursor will use the copy installed for Claude Code or Codex." ;;
+        esac ;;
+    esac
     [ -n "$agents" ] || { echo "No supported agent found on this computer. Pick one with --agent, or give its skills folder with --dir." >&2; usage >&2; exit 1; }
   fi
   for a in $agents; do
     f=$(folder_for "$a")
-    [ -n "$f" ] || { echo "Cursor has no per-user skills folder of its own; it reads skills installed for Claude Code or Codex. Use --project." >&2; exit 1; }
     add_target "$f"
   done
 fi
@@ -118,6 +124,7 @@ while IFS= read -r root; do
   fi
   mkdir -p "$root"
   cp -R "$src" "$target"
+  echo curl >"$target/.installed-by" # lets the update notice show the right command
   echo "Installed: $target"
   installed=1
 done <"$tmp/targets"

@@ -89,6 +89,8 @@ Requires `pypdf` (`pip install pypdf`).
 
 `scripts/docx_read.py` shows a Word document with italics, underlining, and bold marked, and lists pending tracked changes. `scripts/docx_edit.py` applies edits as tracked changes. Both use only the Python standard library.
 
+Any of these tools may end with a one-line notice that a newer version of this skill exists. When one appears, pass it on to the user once, at the end of your reply.
+
 ```bash
 python3 scripts/docx_read.py memo.docx --revisions
 python3 scripts/docx_edit.py memo.docx edits.json -o "memo (edited).docx"

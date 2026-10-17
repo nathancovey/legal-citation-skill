@@ -22,6 +22,7 @@ except ImportError:
     sys.exit("the self-test needs reportlab to build its fixture:  pip install reportlab")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+os.environ["LEGAL_CITATION_NO_UPDATE_CHECK"] = "1"  # tests never touch the network
 
 # Two invented opinions. Each list item is one PDF page of lines.
 PACKET = [

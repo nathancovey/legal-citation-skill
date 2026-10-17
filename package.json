@@ -1,6 +1,6 @@
 {
   "name": "legal-citation-skill",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "A skill for AI agents (Claude, ChatGPT, Codex, Cursor, Gemini CLI, Copilot) that writes, checks, and corrects U.S. legal citations — and never invents a page number.",
   "type": "module",
   "bin": {

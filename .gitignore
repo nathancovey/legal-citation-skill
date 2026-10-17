@@ -4,3 +4,5 @@ __pycache__/
 *.tgz
 *.zip
 .DS_Store
+.update-check.json
+.installed-by

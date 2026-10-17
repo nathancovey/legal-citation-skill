@@ -21,6 +21,13 @@ W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 PARTS = (("word/document.xml", "TEXT"), ("word/footnotes.xml", "FOOTNOTES"), ("word/endnotes.xml", "ENDNOTES"))
 
 
+try:  # an update notice must never stop the tool itself
+    from update_check import announce
+except Exception:  # noqa: BLE001
+    def announce():
+        pass
+
+
 def on(rpr, tag):
     el = rpr.find(W + tag) if rpr is not None else None
     return el is not None and el.get(W + "val") not in ("0", "false", "none")
@@ -96,4 +103,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
+    announce()

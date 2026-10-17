@@ -1,10 +1,24 @@
 # Legal Citation Skill
 
-A skill for AI agents — **Claude, ChatGPT, OpenAI Codex, Cursor, Gemini CLI, GitHub Copilot**, and any other agent that reads the open Agent Skills format. It writes, checks, and corrects U.S. legal citations: full and short case citations, *Id.*, signals, explanatory parentheticals, quotations, pincites, and italics, for memos, briefs, and law review footnotes.
+A skill for AI agents that writes, checks, and corrects U.S. legal citations: full and short case citations, *Id.*, signals, explanatory parentheticals, quotations, pincites, and italics, for memos, briefs, and law review footnotes.
 
 Its first principle: **an agent must never invent a number.** Every volume, page, pincite, and year is traced to a source the agent can see, or left as `___` and flagged.
 
 It can also make the fixes in your Word document, as tracked changes **in your name** for you to accept or reject. It never touches a file you have open, and it proves nothing else in the document changed.
+
+## Works with
+
+| Agent | How to install |
+|---|---|
+| Claude Code | `npx legal-citation-skill` |
+| Claude (web and desktop apps) | Upload [the zip](https://github.com/nathancovey/legal-citation-skill/releases/latest/download/legal-citation.zip) under Skills in settings |
+| ChatGPT | Upload [the zip](https://github.com/nathancovey/legal-citation-skill/releases/latest/download/legal-citation.zip) as a skill (Create → Upload from your computer) |
+| OpenAI Codex | `npx legal-citation-skill` |
+| Cursor | `npx legal-citation-skill` |
+| Gemini CLI | `npx legal-citation-skill` |
+| GitHub Copilot | `npx legal-citation-skill` |
+| Any other agent that reads the open Agent Skills format | `npx legal-citation-skill --dir <its skills folder>` |
+| Any other AI assistant | Paste `SKILL.md` into its instructions and give it the files in `references/` |
 
 ## Install
 
@@ -31,7 +45,7 @@ curl -fsSL https://raw.githubusercontent.com/nathancovey/legal-citation-skill/ma
 |---|---|---|---|
 | Claude Code | `claude` | `~/.claude/skills` | `.claude/skills` |
 | OpenAI Codex | `codex` | `~/.codex/skills` | `.agents/skills` |
-| Cursor | `cursor` | reads Claude Code's and Codex's folders | `.cursor/skills` |
+| Cursor | `cursor` | `~/.cursor/skills`, only when Claude Code and Codex aren't installed (Cursor also reads their folders) | `.cursor/skills` |
 | Gemini CLI | `gemini` | `~/.gemini/skills` | `.gemini/skills` |
 | GitHub Copilot | `copilot` | `~/.copilot/skills` | `.github/skills` |
 | Shared folder | `agents` | `~/.agents/skills` | `.agents/skills` |
@@ -66,6 +80,8 @@ With `curl`, put options after `sh -s --`, for example `… | sh -s -- --agent c
 | Claude Code plugin manager | `/plugin update legal-citation@legal-citation-skill` |
 | ChatGPT or Claude apps | upload the latest zip again |
 
+**You'll be told when there's a new version.** The next time your agent uses one of the skill's tools (reading or editing a Word file, or finding a page number), it adds a one-line note with the update command for however you installed it. The check runs at most once a week. It sends nothing about you: it's one request to the npm registry for the latest version number. It stays silent when offline. To turn it off, set the environment variable `LEGAL_CITATION_NO_UPDATE_CHECK=1`. Uploaded copies in ChatGPT and the Claude apps run in a sandbox and won't see the note; check the [releases page](https://github.com/nathancovey/legal-citation-skill/releases) instead.
+
 ## Compatibility
 
 - **Format.** The skill is a folder in the open Agent Skills format: a `SKILL.md` with a name and description, plus `references/` and `scripts/` that the agent loads only when needed. `scripts/test_skill_format.py` checks the format's rules: name style and length, description length, and links that resolve. It also checks that the instructions don't assume a particular agent.
@@ -77,6 +93,7 @@ With `curl`, put options after `sh -s --`, for example `… | sh -s -- --agent c
 ```
 plugins/legal-citation/skills/legal-citation/
 ├── SKILL.md                         workflow, the five rules, reporting format
+├── VERSION
 ├── references/
 │   ├── case-citations.md            full citations, case names, courts, reporters, pincites
 │   ├── short-forms.md               short citations and Id.
@@ -91,8 +108,10 @@ plugins/legal-citation/skills/legal-citation/
     ├── find_pincite.py              reporter page for a passage in a PDF
     ├── docx_read.py                 read a .docx with italics and tracked changes shown
     ├── docx_edit.py                 apply edits as tracked changes in the user's name
+    ├── update_check.py              weekly "new version available" note
     ├── test_find_pincite.py         self-test
     ├── test_docx_edit.py            self-test
+    ├── test_update_check.py         self-test
     └── test_skill_format.py         format check
 ```
 
