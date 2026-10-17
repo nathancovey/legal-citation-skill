@@ -25,6 +25,7 @@ Mechanics:
 - Italicize (or underline) signals. In `See, e.g.,` everything is italicized except the final comma.
 - Capitalize a signal that begins a citation sentence; lowercase it inside a citation clause.
 - When one citation sentence uses several signals, order them as in the table. Separate authorities with semicolons. Within a signal you may put the most helpful or most authoritative source first.
+- **Don't repeat a signal** for consecutive authorities that share it: `See A; B.`, not `See A; see B.`
 
 ### Common mistakes
 

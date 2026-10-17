@@ -10,7 +10,7 @@ How to format U.S. legal citations — what goes where, what is italicized, when
 ## Five rules that override everything else
 
 1. **Never originate a number.** Volume, first page, pincite, year, docket number: copy each one from a source you can actually see. If you can't see it, write `___` and say exactly what is missing. A plausible wrong pincite is worse than a blank, because it looks finished.
-2. **Pincites come from the page, not from memory.** Database printouts mark where each reporter page begins with an inline marker such as `*138`. Use `scripts/find_pincite.py` to locate the page for a passage in a PDF.
+2. **Pincites come from the page, not from memory.** Database printouts mark where each reporter page begins with an inline marker such as `*138`. Use `scripts/find_pincite.py` to locate the page for a passage in a PDF. No local copy? Look the opinion up online — see `references/verification.md`.
 3. **A citation must support the sentence it is attached to.** A case cannot prove a fact from your own record, and no signal fixes that. Restructure the sentence instead.
 4. **Read the whole passage before saying what a case holds.** Search snippets mislead. Check what the court *did* with the language — a rule statement may come from a case that applied it against your position.
 5. **Local authority wins.** Court rules, an instructor's instructions, or a firm style guide override this skill. Once the user says something is permitted, stop flagging it.
@@ -28,7 +28,7 @@ Italics and underlining are interchangeable. Pick one and use it everywhere.
 
 1. **List every citation in document order**, including short forms and `Id.` Whether a short form is allowed depends on what came before it.
 2. **Check form** against the references below.
-3. **Trace every number** to the source. If you have the PDF, run the pincite script. Anything you can't trace goes on a separate list.
+3. **Trace every number** to the source. If you have the PDF, run the pincite script. If you don't, and you can browse the web, find the opinion online (`references/verification.md`). Anything you still can't trace goes on a separate list.
 4. **Compare quotations character by character** with the source.
 5. **Check fit.** Does the authority support the sentence it is attached to, with the right signal?
 6. **Report** in the format below.

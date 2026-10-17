@@ -24,6 +24,27 @@ State v. Bonner, 643 A.2d 13, 15 (Del. Super. Ct. 1995).
 - A footnote: `573 A.3d at 217 n.11`.
 - Never use "p." or "pp." in a citation.
 
+## U.S. Supreme Court: one reporter only
+
+Cite only U.S. Reports when the case appears there. Drop the parallel Supreme Court Reporter and Lawyers' Edition cites that database "copy with reference" features add:
+
+- Wrong: `Miranda v. Arizona, 384 U.S. 436, 444, [S. Ct. cite], [L. Ed. cite] (1966)`
+- Right: `Miranda v. Arizona, 384 U.S. 436, 444 (1966)`
+
+Use `S. Ct.` only for recent decisions not yet in U.S. Reports.
+
+## Westlaw and Lexis citations (unreported decisions)
+
+```
+<Case name>, No. <docket number>, <year> WL <number>, at *<page> (<court> <Mon. day, year>).
+```
+
+- Give the docket number as it appears in the opinion's caption. Databases sometimes strip its punctuation (`615CV1824ORL41GJK` for `6:15-cv-1824-Orl-41GJK`); keep the form consistent across your citations.
+- The pincite is the database's star page, after `at`: `at *8`.
+- The parenthetical takes the **full date** (abbreviated month, day, year), not just the year.
+- Short form: `<Short name>, <year> WL <number>, at *<page>.` Then `Id. at *5.`
+- When the first party is a government official, the short form uses the other party: `Sec'y of Lab. v. Smith Co.` becomes `Smith Co.`
+
 ## The court-and-year parenthetical
 
 Name the court only to the extent the reporter doesn't already make it clear.
