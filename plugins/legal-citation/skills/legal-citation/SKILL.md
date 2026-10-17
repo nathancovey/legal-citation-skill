@@ -1,6 +1,6 @@
 ---
 name: legal-citation
-description: Write, check, and correct U.S. legal citations in the uniform citation style used by American courts, law firms, and law reviews — full and short case citations, "Id.", signals, explanatory parentheticals, quotations, pincites, and italics. Use when drafting or reviewing a legal memo, brief, motion, opinion, or law review footnote; when asked whether a citation is formatted correctly; or when turning a rough reference like "(Smith v. Jones, 2004)" into a proper citation. Never invents page numbers — every number is traced to a source.
+description: Write, check, and correct U.S. legal citations in the uniform citation style used by American courts, law firms, and law reviews — full and short case citations, "Id.", signals, explanatory parentheticals, quotations, pincites, and italics. Use when drafting or reviewing a legal memo, brief, motion, opinion, or law review footnote; when asked whether a citation is formatted correctly; or when turning a rough reference like "(Smith v. Jones, 2004)" into a proper citation. Can make the fixes directly in a Word document as tracked changes in the user's name. Never invents page numbers — every number is traced to a source.
 ---
 
 # Legal Citation Skill
@@ -32,6 +32,15 @@ Italics and underlining are interchangeable. Pick one and use it everywhere.
 4. **Compare quotations character by character** with the source.
 5. **Check fit.** Does the authority support the sentence it is attached to, with the right signal?
 6. **Report** in the format below.
+
+## Fixing the document itself
+
+If the user asks you to make the fixes in their Word file, follow `references/word-documents.md`. In short:
+
+- Every change is a **tracked change in the user's name**, never yours.
+- **Never replace a file that's open** in Word. Write a copy instead.
+- **Fix only what's certain.** Leave the "check" items for the user.
+- Use `scripts/docx_edit.py`, which proves before writing that nothing else in the document changed. Once the user has accepted the changes, confirm with `scripts/docx_read.py --revisions` that none are still pending.
 
 ## Building a citation from a rough reference
 
@@ -65,6 +74,7 @@ Load the one you need.
 | `references/typeface-and-placement.md` | What is italicized; citation sentences versus clauses |
 | `references/verification.md` | Sourcing numbers, star pagination, what is not part of the opinion |
 | `references/abbreviations.md` | Case-name words, states, reporters, court designations |
+| `references/word-documents.md` | Making fixes in a Word file safely, as tracked changes in the user's name |
 
 ## Scripts
 
@@ -76,6 +86,13 @@ python3 scripts/find_pincite.py packet.pdf --markers
 ```
 
 Requires `pypdf` (`pip install pypdf`).
+
+`scripts/docx_read.py` shows a Word document with italics, underlining, and bold marked, and lists pending tracked changes. `scripts/docx_edit.py` applies edits as tracked changes. Both use only the Python standard library.
+
+```bash
+python3 scripts/docx_read.py memo.docx --revisions
+python3 scripts/docx_edit.py memo.docx edits.json -o "memo (edited).docx"
+```
 
 ## Scope
 

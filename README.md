@@ -4,6 +4,8 @@ A skill for AI agents that writes, checks, and corrects U.S. legal citations —
 
 Its first principle: **an agent must never invent a number.** Every volume, page, pincite, and year is traced to a source the agent can see, or left as `___` and flagged.
 
+It can also make the fixes in your Word document, as tracked changes **in your name** for you to accept or reject. It never touches a file you have open, and it proves nothing else in the document changed.
+
 ## Install
 
 ```bash
@@ -58,11 +60,24 @@ plugins/legal-citation/skills/legal-citation/
 │   ├── typeface-and-placement.md    italics; citation sentences vs. clauses
 │   ├── verification.md              sourcing numbers, star pagination
 │   ├── abbreviations.md             case-name words, states, reporters, courts
+│   ├── word-documents.md            fixing a Word file safely, as tracked changes
 │   └── LICENSE-reporters-db.txt
 └── scripts/
     ├── find_pincite.py              reporter page for a passage in a PDF
-    └── test_find_pincite.py         self-test
+    ├── docx_read.py                 read a .docx with italics and tracked changes shown
+    ├── docx_edit.py                 apply edits as tracked changes in the user's name
+    ├── test_find_pincite.py         self-test
+    └── test_docx_edit.py            self-test
 ```
+
+### The Word tools
+
+```bash
+python3 scripts/docx_read.py memo.docx --revisions
+python3 scripts/docx_edit.py memo.docx edits.json -o "memo (edited).docx"
+```
+
+`docx_edit.py` takes a JSON list of edits (each finds text in one paragraph and replaces, deletes, inserts, or changes italic, bold, or underline). Every edit becomes a tracked change authored by the user — the name comes from the document's own metadata. Before writing, the script proves that rejecting all changes restores the original, that accepting them gives exactly the intended text, and that nothing else changed. Standard library only; see `references/word-documents.md` for the format. Self-test: `python3 scripts/test_docx_edit.py`.
 
 ### The pincite tool
 
