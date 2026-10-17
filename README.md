@@ -1,6 +1,6 @@
 # Legal Citation Skill
 
-A skill for AI agents that writes, checks, and corrects U.S. legal citations — full and short case citations, *Id.*, signals, explanatory parentheticals, quotations, pincites, and italics — for memos, briefs, and law review footnotes.
+A skill for AI agents — **Claude, ChatGPT, OpenAI Codex, Cursor, Gemini CLI, GitHub Copilot**, and any other agent that reads the open Agent Skills format. It writes, checks, and corrects U.S. legal citations: full and short case citations, *Id.*, signals, explanatory parentheticals, quotations, pincites, and italics, for memos, briefs, and law review footnotes.
 
 Its first principle: **an agent must never invent a number.** Every volume, page, pincite, and year is traced to a source the agent can see, or left as `___` and flagged.
 
@@ -12,40 +12,65 @@ It can also make the fixes in your Word document, as tracked changes **in your n
 npx legal-citation-skill
 ```
 
-That's it. Start a new session and your agent has the skill.
+That installs it for every supported agent on your computer. Start a new session and it's ready.
 
-**No Node.js?** On macOS or Linux, this needs nothing but `curl`:
+**No Node.js?** On macOS or Linux:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nathancovey/legal-citation-skill/main/install.sh | sh
 ```
 
-**Using Claude on the web or desktop app?** Download [legal-citation.zip](https://github.com/nathancovey/legal-citation-skill/releases/latest/download/legal-citation.zip) and upload it under Skills in Claude's settings.
+**ChatGPT or the Claude apps?** Download [legal-citation.zip](https://github.com/nathancovey/legal-citation-skill/releases/latest/download/legal-citation.zip), then:
+- **ChatGPT:** upload it as a skill (Create → Upload from your computer). ChatGPT scans uploaded skills before they become available.
+- **Claude (web or desktop):** upload it under Skills in settings.
 
 <details>
-<summary>Options and other ways to install</summary>
+<summary>Choose agents, install into a project, and other options</summary>
 
-Both one-line installers put the skill in `~/.claude/skills/legal-citation`, where Claude Code finds it in every project. They take the same options. With `curl`, put them after `sh -s --`, for example `… | sh -s -- --project`.
+| Agent | `--agent` | Your home folder | A project |
+|---|---|---|---|
+| Claude Code | `claude` | `~/.claude/skills` | `.claude/skills` |
+| OpenAI Codex | `codex` | `~/.codex/skills` | `.agents/skills` |
+| Cursor | `cursor` | reads Claude Code's and Codex's folders | `.cursor/skills` |
+| Gemini CLI | `gemini` | `~/.gemini/skills` | `.gemini/skills` |
+| GitHub Copilot | `copilot` | `~/.copilot/skills` | `.github/skills` |
+| Shared folder | `agents` | `~/.agents/skills` | `.agents/skills` |
 
-| Option | Effect |
-|---|---|
-| `--project` | Install to `./.claude/skills` — this project only |
-| `--dir <path>` | Install to another agent's skills folder |
-| `--force` | Replace an existing copy |
-| `--uninstall` | Remove it (`npx` only; otherwise delete the folder) |
+```bash
+npx legal-citation-skill --agent codex --agent gemini   # specific agents
+npx legal-citation-skill --project                      # this project's folders
+npx legal-citation-skill --dir <skills-folder>          # any other agent
+npx legal-citation-skill --list                         # show the table above
+npx legal-citation-skill --uninstall                    # remove it (same flags)
+```
 
-`bunx legal-citation-skill` and `pnpm dlx legal-citation-skill` work the same as `npx`.
+With `curl`, put options after `sh -s --`, for example `… | sh -s -- --agent codex`. `bunx` and `pnpm dlx` work the same as `npx`.
 
-**Claude Code plugin manager** — installs through Claude Code and updates with `/plugin update`:
+**Claude Code plugin manager**, which updates with `/plugin update`:
 
 ```
 /plugin marketplace add nathancovey/legal-citation-skill
 /plugin install legal-citation@legal-citation-skill
 ```
 
-**Any other agent** — the skill is a plain folder in the open Agent Skills format: a `SKILL.md` plus `references/` and `scripts/` that load only when needed. Copy `plugins/legal-citation/skills/legal-citation` wherever your agent reads skills. For an agent without skill support, put `SKILL.md` in its instructions and give it read access to `references/`.
+**An agent without skill support:** put `SKILL.md` in its instructions and give it read access to `references/`.
 
 </details>
+
+## Updating
+
+| Installed with | Update with |
+|---|---|
+| `npx` | `npx legal-citation-skill@latest --force` |
+| `curl` | the same `curl` line, with `… \| sh -s -- --force` |
+| Claude Code plugin manager | `/plugin update legal-citation@legal-citation-skill` |
+| ChatGPT or Claude apps | upload the latest zip again |
+
+## Compatibility
+
+- **Format.** The skill is a folder in the open Agent Skills format: a `SKILL.md` with a name and description, plus `references/` and `scripts/` that the agent loads only when needed. `scripts/test_skill_format.py` checks the format's rules: name style and length, description length, and links that resolve. It also checks that the instructions don't assume a particular agent.
+- **Scripts.** Python 3. The Word tools use only the standard library. The page-finding tool needs `pypdf`, or its older name `PyPDF2`. An agent that can't run code still gets every rule; it just can't run the tools.
+- **Tested.** Built and tested end to end with Claude Code, including reviewing and fixing a real memo in Microsoft Word. Other agents read the same format from the folders their makers document; please report anything that behaves differently.
 
 ## What's inside
 
@@ -58,7 +83,7 @@ plugins/legal-citation/skills/legal-citation/
 │   ├── signals-and-parentheticals.md
 │   ├── quotations.md                block quotes, ellipses, brackets, candor
 │   ├── typeface-and-placement.md    italics; citation sentences vs. clauses
-│   ├── verification.md              sourcing numbers, star pagination
+│   ├── verification.md              sourcing numbers, star pagination, looking cases up online
 │   ├── abbreviations.md             case-name words, states, reporters, courts
 │   ├── word-documents.md            fixing a Word file safely, as tracked changes
 │   └── LICENSE-reporters-db.txt
@@ -67,17 +92,9 @@ plugins/legal-citation/skills/legal-citation/
     ├── docx_read.py                 read a .docx with italics and tracked changes shown
     ├── docx_edit.py                 apply edits as tracked changes in the user's name
     ├── test_find_pincite.py         self-test
-    └── test_docx_edit.py            self-test
+    ├── test_docx_edit.py            self-test
+    └── test_skill_format.py         format check
 ```
-
-### The Word tools
-
-```bash
-python3 scripts/docx_read.py memo.docx --revisions
-python3 scripts/docx_edit.py memo.docx edits.json -o "memo (edited).docx"
-```
-
-`docx_edit.py` takes a JSON list of edits (each finds text in one paragraph and replaces, deletes, inserts, or changes italic, bold, or underline). Every edit becomes a tracked change authored by the user — the name comes from the document's own metadata. Before writing, the script proves that rejecting all changes restores the original, that accepting them gives exactly the intended text, and that nothing else changed. Standard library only; see `references/word-documents.md` for the format. Self-test: `python3 scripts/test_docx_edit.py`.
 
 ### The pincite tool
 
@@ -88,6 +105,15 @@ python3 scripts/find_pincite.py packet.pdf --markers
 ```
 
 It finds the reporter page of a passage in a database printout using star pagination (`*138`). It ignores line breaks, quote style, hyphenation, and the markers themselves. A passage that crosses a page break is reported as a range (`217–18`), and star pages restart for each opinion in a multi-case packet. To run the self-test: `pip install reportlab`, then `python3 scripts/test_find_pincite.py`.
+
+### The Word tools
+
+```bash
+python3 scripts/docx_read.py memo.docx --revisions
+python3 scripts/docx_edit.py memo.docx edits.json -o "memo (edited).docx"
+```
+
+`docx_edit.py` takes a JSON list of edits. Each edit finds text in one paragraph and replaces, deletes, inserts, or changes italic, bold, or underline. Every edit becomes a tracked change authored by the user, with the name taken from the document's own metadata. Before writing, the script proves three things: rejecting all changes restores the original, accepting them gives exactly the intended text, and nothing else changed. See `references/word-documents.md` for the format. Self-test: `python3 scripts/test_docx_edit.py`.
 
 ## Scope
 

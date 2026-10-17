@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
- * Install the Legal Citation Skill into an agent's skills folder.
+ * Install the Legal Citation Skill for AI agents.
  *
- *   npx legal-citation-skill                  ~/.claude/skills/legal-citation
- *   npx legal-citation-skill --project        ./.claude/skills/legal-citation
- *   npx legal-citation-skill --dir <path>     <path>/legal-citation  (any agent)
- *   npx legal-citation-skill --uninstall      remove it again (same flags)
+ *   npx legal-citation-skill                    every supported agent found on this computer
+ *   npx legal-citation-skill --agent codex      a specific agent (repeat for several)
+ *   npx legal-citation-skill --project          this project's skill folders instead of your home folder
+ *   npx legal-citation-skill --dir <path>       any other agent's skills folder
+ *   npx legal-citation-skill --uninstall        remove it again (same flags)
+ *   npx legal-citation-skill --list             show where each agent looks
  *
  * No dependencies and no install-time scripts: nothing runs unless you run it.
  */
@@ -18,44 +20,99 @@ const NAME = "legal-citation";
 const here = dirname(fileURLToPath(import.meta.url));
 const source = resolve(here, "..", "plugins", NAME, "skills", NAME);
 
-const USAGE = `Install the Legal Citation Skill for an AI agent.
+// Where each agent reads skills. `home` is the folder whose presence means the agent is installed.
+// Cursor has no per-user folder of its own: it also reads skills installed for Claude Code and Codex.
+const AGENTS = {
+  claude: { label: "Claude Code", home: ".claude", global: ".claude/skills", project: ".claude/skills" },
+  codex: { label: "OpenAI Codex", home: ".codex", global: ".codex/skills", project: ".agents/skills" },
+  cursor: { label: "Cursor", home: null, global: null, project: ".cursor/skills" },
+  gemini: { label: "Gemini CLI", home: ".gemini", global: ".gemini/skills", project: ".gemini/skills" },
+  copilot: { label: "GitHub Copilot", home: ".copilot", global: ".copilot/skills", project: ".github/skills" },
+  agents: { label: "shared .agents folder", home: null, global: ".agents/skills", project: ".agents/skills" },
+};
+const DETECTED = ["claude", "codex", "gemini", "copilot"];
+
+const USAGE = `Install the Legal Citation Skill for AI agents.
 
 Usage:
-  npx legal-citation-skill [--project | --dir <path>] [--force]
-  npx legal-citation-skill --uninstall [--project | --dir <path>]
+  npx legal-citation-skill [--agent <name>]... [--project] [--force]
+  npx legal-citation-skill --dir <path> [--force]
+  npx legal-citation-skill --uninstall [--agent <name>]... [--project | --dir <path>]
+  npx legal-citation-skill --list
 
-  (default)       install to ~/.claude/skills/${NAME} (every project)
-  --project       install to ./.claude/skills/${NAME} (this project only)
-  --dir <path>    install to <path>/${NAME} — use your agent's skills folder
+  (no --agent)    every supported agent found on this computer
+  --agent <name>  ${Object.keys(AGENTS).join(", ")} (repeatable)
+  --project       install into this project's folders instead of your home folder
+  --dir <path>    install into <path>/${NAME} — any agent's skills folder
   --force         replace an existing copy
-  --uninstall     remove the installed copy`;
+  --uninstall     remove installed copies
+  --list          show where each agent looks
 
-const args = process.argv.slice(2);
-const known = new Set(["--project", "--dir", "--force", "--uninstall", "--help", "-h"]);
+ChatGPT and the Claude apps install by upload instead: see the README.`;
 
 function fail(message) {
   console.error(`${message}\n\n${USAGE}`);
   process.exit(1);
 }
 
-const dirIndex = args.indexOf("--dir");
-const dir = dirIndex >= 0 ? args[dirIndex + 1] : undefined;
-if (dirIndex >= 0 && (!dir || dir.startsWith("--"))) fail("--dir needs a path.");
-const isDirValue = (i) => dirIndex >= 0 && i === dirIndex + 1;
-const unknown = args.filter((a, i) => !known.has(a) && !isDirValue(i));
-if (unknown.length) fail(`Unknown option: ${unknown.join(" ")}`);
-if (args.includes("--help") || args.includes("-h")) {
+// ------------------------------------------------------------- arguments
+const args = process.argv.slice(2);
+const flags = new Set();
+const agents = [];
+let dir;
+for (let i = 0; i < args.length; i++) {
+  const a = args[i];
+  if (a === "--agent" || a === "--dir") {
+    const v = args[++i];
+    if (!v || v.startsWith("--")) fail(`${a} needs a value.`);
+    if (a === "--dir") dir = v;
+    else if (!AGENTS[v]) fail(`Unknown agent: ${v}`);
+    else agents.push(v);
+  } else if (["--project", "--force", "--uninstall", "--list", "--help", "-h"].includes(a)) {
+    flags.add(a);
+  } else {
+    fail(`Unknown option: ${a}`);
+  }
+}
+if (flags.has("--help") || flags.has("-h")) {
   console.log(USAGE);
   process.exit(0);
 }
-if (dir && args.includes("--project")) fail("Use either --project or --dir, not both.");
+if (dir && (agents.length || flags.has("--project"))) fail("Use --dir on its own, without --agent or --project.");
 
-const root = dir
-  ? resolve(dir)
-  : args.includes("--project")
-    ? resolve(".claude", "skills")
-    : join(homedir(), ".claude", "skills");
-const target = join(root, NAME);
+if (flags.has("--list")) {
+  console.log("Where each agent reads skills (your home folder / a project):");
+  for (const [key, a] of Object.entries(AGENTS)) {
+    console.log(`  ${key.padEnd(8)} ${a.label.padEnd(22)} ${a.global ? "~/" + a.global : "—"}  /  ./${a.project}`);
+  }
+  process.exit(0);
+}
+
+// -------------------------------------------------------------- targets
+const home = homedir();
+const project = flags.has("--project");
+let chosen = agents;
+if (!dir && !chosen.length) {
+  chosen = DETECTED.filter((k) => existsSync(join(home, AGENTS[k].home)));
+  if (!chosen.length) {
+    fail("No supported agent found on this computer. Pick one with --agent, or give its skills folder with --dir.");
+  }
+}
+
+const targets = new Map(); // skills folder -> labels of the agents that read it
+if (dir) {
+  targets.set(resolve(dir), ["the folder you gave"]);
+} else {
+  for (const key of chosen) {
+    const a = AGENTS[key];
+    const rel = project ? a.project : a.global;
+    if (!rel) {
+      fail(`${a.label} has no per-user skills folder of its own; it reads skills installed for Claude Code or Codex. Use --project to install into this project.`);
+    }
+    const folder = project ? resolve(rel) : join(home, rel);
+    targets.set(folder, [...(targets.get(folder) || []), a.label]);
+  }
+}
 
 /** Only ever delete a folder that is recognizably this skill. */
 function isOurs(path) {
@@ -63,23 +120,38 @@ function isOurs(path) {
   return existsSync(skill) && readFileSync(skill, "utf8").includes(`name: ${NAME}\n`);
 }
 
-if (args.includes("--uninstall")) {
-  if (!existsSync(target)) {
-    console.log(`Nothing installed at ${target}`);
-    process.exit(0);
+// ---------------------------------------------------------------- act
+const problems = [];
+for (const [root, labels] of targets) {
+  const target = join(root, NAME);
+  const who = labels.join(", ");
+  if (flags.has("--uninstall")) {
+    if (!existsSync(target)) continue;
+    if (!isOurs(target)) {
+      problems.push(`${target} exists but isn't this skill; left it alone.`);
+      continue;
+    }
+    rmSync(target, { recursive: true });
+    console.log(`Removed from ${who}: ${target}`);
+    continue;
   }
-  if (!isOurs(target)) fail(`${target} exists but isn't this skill; leaving it alone.`);
-  rmSync(target, { recursive: true });
-  console.log(`Removed ${target}`);
-  process.exit(0);
+  if (existsSync(target)) {
+    if (!flags.has("--force")) {
+      problems.push(`${target} already exists (${who}). Re-run with --force to replace it.`);
+      continue;
+    }
+    if (!isOurs(target)) {
+      problems.push(`${target} exists but isn't this skill; refusing to replace it.`);
+      continue;
+    }
+    rmSync(target, { recursive: true });
+  }
+  cpSync(source, target, { recursive: true });
+  console.log(`Installed for ${who}: ${target}`);
 }
 
-if (existsSync(target)) {
-  if (!args.includes("--force")) fail(`${target} already exists. Re-run with --force to replace it.`);
-  if (!isOurs(target)) fail(`${target} exists but isn't this skill; refusing to replace it.`);
-  rmSync(target, { recursive: true });
+for (const p of problems) console.error(p);
+if (!flags.has("--uninstall") && problems.length < targets.size) {
+  console.log("Start a new agent session to pick it up.");
 }
-
-cpSync(source, target, { recursive: true });
-console.log(`Installed the Legal Citation Skill to ${target}`);
-console.log("Start a new agent session to pick it up.");
+process.exit(problems.length ? 1 : 0);

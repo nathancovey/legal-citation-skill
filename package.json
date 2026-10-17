@@ -1,7 +1,7 @@
 {
   "name": "legal-citation-skill",
-  "version": "1.2.0",
-  "description": "A skill for AI agents that writes, checks, and corrects U.S. legal citations — and never invents a page number.",
+  "version": "1.3.0",
+  "description": "A skill for AI agents (Claude, ChatGPT, Codex, Cursor, Gemini CLI, Copilot) that writes, checks, and corrects U.S. legal citations — and never invents a page number.",
   "type": "module",
   "bin": {
     "legal-citation-skill": "bin/install.mjs"
@@ -22,8 +22,13 @@
     "legal-writing",
     "agent-skills",
     "skill",
+    "ai-agent",
     "claude",
-    "ai-agent"
+    "chatgpt",
+    "codex",
+    "cursor",
+    "gemini",
+    "copilot"
   ],
   "author": "Nathan Covey",
   "license": "MIT",

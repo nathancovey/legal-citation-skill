@@ -23,7 +23,10 @@ import sys
 try:
     from pypdf import PdfReader
 except ImportError:
-    sys.exit("find_pincite.py needs pypdf:  pip install pypdf")
+    try:  # the library's older name, still preinstalled in some hosted Python sandboxes
+        from PyPDF2 import PdfReader
+    except ImportError:
+        sys.exit("find_pincite.py needs pypdf:  pip install pypdf")
 
 # "*138" (primary reporter) or "**5" (a parallel reporter). Must not touch a
 # word character on either side, so "* * *" and footnote numbers don't match.
