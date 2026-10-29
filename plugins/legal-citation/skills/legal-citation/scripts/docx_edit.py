@@ -231,7 +231,7 @@ def accepted_text(text, ops):
         if op[0] == "del":
             for i in range(op[1], op[2]):
                 chars[i] = []
-    for op in sorted((o for o in ops if o[0] == "ins"), key=lambda o: -o[1]):
+    for op in reversed([o for o in ops if o[0] == "ins"]):  # same spot: in edit order, as edit_paragraph writes them
         chars[op[1]].insert(0, op[2])
     return "".join("".join(c) for c in chars)
 

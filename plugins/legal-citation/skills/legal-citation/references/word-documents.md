@@ -42,7 +42,7 @@ A JSON list. Each edit finds text inside one paragraph and does one thing.
 | Action | Exactly one of: `replace`: "text", `delete`: true, `insert_before`: "text", `insert_after`: "text", or any of `italic` / `bold` / `underline`: true or false. |
 | `‹…›` in inserted text | Marks the italic part of `replace`, `insert_before`, or `insert_after` text: `" (‹Id.› at 4)."` inserts *Id.* in italics and the rest in roman. Without markers, inserted text takes the formatting of the text next to it. |
 
-An `Id.` inserted after roman text would otherwise come out roman, and it can't be fixed afterward: an insertion can't be combined with `italic`: true, and the script won't edit a paragraph that has pending changes. So mark italics in the same edit, with the marker `docx_read.py` shows. Once any part is marked, every unmarked part is roman, even next to italic text. Unmatched, nested, or empty markers are refused.
+An `Id.` inserted after roman text would otherwise come out roman, and it can't be fixed afterward: an insertion can't be combined with `italic`: true, and the script won't edit a paragraph that has pending changes. So mark italics in the same edit, with the marker `docx_read.py` shows. Once any part is marked, every unmarked part is roman, even next to italic text. Unmatched, nested, or empty markers are refused. Several insertions at the same spot appear in the order the edits are listed.
 
 Typical citation fixes:
 

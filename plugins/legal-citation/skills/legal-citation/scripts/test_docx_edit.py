@@ -138,6 +138,19 @@ def main():
         check("rejecting the partly italic changes restores the original, formatting included",
               read(undone) == read(src), read(undone))
 
+        r = run(tmp, src, [
+            {"find": "missed two", "target": "missed", "insert_after": " all"},
+            {"find": "missed two", "target": " two", "insert_before": " of"},
+            {"find": "two shifts", "insert_after": " (‹Id.›"},
+            {"find": "two shifts", "insert_after": " at 4)."},
+            {"find": "Smith held", "target": " held", "insert_before": ","},
+            {"find": "Smith held", "target": " held", "insert_before": " 9 A.3d at 4,"},
+        ], "-o", mixed)
+        text = read(mixed)
+        check("insertions at the same spot appear in the order listed",
+              r.returncode == 0 and "She missed all of two shifts (‹Id.› at 4).\n" in text
+              and "‹Smith›, 9 A.3d at 4, held otherwise." in text, r.stderr or text)
+
         def refused(name, edits, *extra, expect="Nothing written"):
             if os.path.exists(out):
                 os.remove(out)
