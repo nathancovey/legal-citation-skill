@@ -40,6 +40,9 @@ A JSON list. Each edit finds text inside one paragraph and does one thing.
 | `occurrence` | Which match to use, counting from 1. Without it, `find` must match exactly once. |
 | `all` | `true` to apply to every match. |
 | Action | Exactly one of: `replace`: "text", `delete`: true, `insert_before`: "text", `insert_after`: "text", or any of `italic` / `bold` / `underline`: true or false. |
+| `‹…›` in inserted text | Marks the italic part of `replace`, `insert_before`, or `insert_after` text: `" (‹Id.› at 4)."` inserts *Id.* in italics and the rest in roman. Without markers, inserted text takes the formatting of the text next to it. |
+
+An `Id.` inserted after roman text would otherwise come out roman, and it can't be fixed afterward: an insertion can't be combined with `italic`: true, and the script won't edit a paragraph that has pending changes. So mark italics in the same edit, with the marker `docx_read.py` shows. Once any part is marked, every unmarked part is roman, even next to italic text. Unmatched, nested, or empty markers are refused.
 
 Typical citation fixes:
 
@@ -52,11 +55,13 @@ Typical citation fixes:
   {"find": "at *8 However", "target": "at *8", "insert_after": "."},
   {"find": "aff'd sub nom.", "italic": true},
   {"find": "Jonse", "replace": "Jones", "all": true},
-  {"in": "In the present case", "find": "; see Smith", "target": "see ", "delete": true}
+  {"in": "In the present case", "find": "; see Smith", "target": "see ", "delete": true},
+  {"find": "missed two shifts.", "target": ".", "insert_before": " (‹Id.› at 4)"},
+  {"find": "Smith held", "target": "Smith", "replace": "‹Smith›, 721 F.3d at 12,"}
 ]
 ```
 
-These do, in order: italicize a case name through "Inc."; take italics off the comma after a case name; add a missing reporter; add a missing space after *Id.*; add a missing period; italicize a history phrase; fix a misspelled name everywhere; and drop a repeated signal in one paragraph.
+These do, in order: italicize a case name through "Inc."; take italics off the comma after a case name; add a missing reporter; add a missing space after *Id.*; add a missing period; italicize a history phrase; fix a misspelled name everywhere; drop a repeated signal in one paragraph; add a record citation with only *Id.* italic; and expand a bare case name into a short citation with only the name italic.
 
 ## Limits
 
@@ -64,5 +69,5 @@ These do, in order: italicize a case name through "Inc."; take italics off the c
 - Covers the main text, footnotes, and endnotes, but not headers, text boxes, or comments.
 - `find` can't span a tab, line break, or symbol character.
 - Refuses to split runs that contain tabs or fields, such as citations inserted by a reference manager.
-- Formatting changes cover italic, bold, and underline.
+- Formatting changes cover italic, bold, and underline. Inside inserted text, only italics can be marked, and `‹` and `›` can't be inserted as literal characters.
 - Works on `.docx` only. Convert an old `.doc` file first.

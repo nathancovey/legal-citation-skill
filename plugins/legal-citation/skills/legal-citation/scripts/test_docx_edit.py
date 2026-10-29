@@ -22,6 +22,7 @@ os.environ["LEGAL_CITATION_NO_UPDATE_CHECK"] = "1"  # tests never touch the netw
 EDIT, READ = os.path.join(HERE, "docx_edit.py"), os.path.join(HERE, "docx_read.py")
 NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
 I = "<w:rPr><w:i/><w:iCs/></w:rPr>"
+TNR = '<w:rFonts w:ascii="Times New Roman"/>{}<w:sz w:val="24"/>'  # formatting around where italics go
 
 DOC = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document {NS}><w:body>
@@ -31,6 +32,8 @@ DOC = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:p><w:ins w:id="1" w:author="Someone" w:date="2026-01-01T00:00:00Z"><w:r><w:t>Already tracked.</w:t></w:r></w:ins></w:p>
 <w:p><w:r><w:t xml:space="preserve">Before the page </w:t><w:lastRenderedPageBreak/><w:t>breaks here.</w:t></w:r></w:p>
 <w:p><w:r><w:t>See 29 U.S.C. § 2612.</w:t></w:r></w:p>
+<w:p><w:r><w:rPr>{TNR.format("")}</w:rPr><w:t>She missed two shifts</w:t></w:r></w:p>
+<w:p><w:r>{I}<w:t>Smith</w:t></w:r><w:r><w:t xml:space="preserve"> held otherwise.</w:t></w:r></w:p>
 </w:body></w:document>"""
 FOOTNOTES = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:footnotes {NS}><w:footnote w:id="1"><w:p><w:r><w:t xml:space="preserve">Roe, 12 A.3d at 5.</w:t></w:r></w:p></w:footnote></w:footnotes>"""
@@ -66,6 +69,17 @@ def part(path, name="word/document.xml"):
 
 def read(path):
     return subprocess.run([sys.executable, READ, path, "--revisions"], capture_output=True, text=True).stdout
+
+
+def reject(src, dest, author="Pat Lawyer"):
+    """What Word gives back when every insertion and deletion by `author` is rejected."""
+    with zipfile.ZipFile(src) as zin, zipfile.ZipFile(dest, "w") as zout:
+        for info in zin.infolist():
+            x = zin.read(info.filename).decode()
+            x = re.sub(rf'<w:ins [^>]*w:author="{author}"[^>]*>.*?</w:ins>', "", x, flags=re.S)
+            x = re.sub(rf'<w:del [^>]*w:author="{author}"[^>]*>(.*?)</w:del>',
+                       lambda m: m.group(1).replace("w:delText", "w:t"), x, flags=re.S)
+            zout.writestr(info, x)
 
 
 def main():
@@ -105,6 +119,25 @@ def main():
         check("revision ids unique", len(ids) == len(set(ids)))
         check("pending changes listed with author", "inserted" in text and "by Pat Lawyer" in text, text)
 
+        mixed, undone = os.path.join(tmp, "mixed.docx"), os.path.join(tmp, "undone.docx")
+        r = run(tmp, src, [
+            {"find": "two shifts", "insert_after": " (‹Id.› at 4)."},
+            {"find": "Smith held", "target": "Smith", "replace": "‹Smith›, 9 A.3d at 4,"},
+        ], "-o", mixed)
+        check("partly italic insertions apply", r.returncode == 0, r.stderr)
+        text = read(mixed)
+        check("only the part marked ‹…› is italic", "She missed two shifts (‹Id.› at 4).\n" in text, text)
+        check("unmarked inserted text is roman even beside italics", "‹Smith›, 9 A.3d at 4, held otherwise." in text, text)
+        check("a partly italic insertion is one tracked change",
+              text.count("[ (Id. at 4).]") == 1 and "[Id.]" not in text, text)
+        ins = re.search(r"two shifts</w:t></w:r><w:ins [^>]*>(.*?)</w:ins>", part(mixed), re.S)
+        runs = re.findall(r"<w:rPr>(.*?)</w:rPr>", ins.group(1)) if ins else []
+        check("italics placed in schema order, the rest of the formatting kept, no rPrChange",
+              runs == [TNR.format(""), TNR.format("<w:i/><w:iCs/>"), TNR.format("")], runs)
+        reject(mixed, undone)
+        check("rejecting the partly italic changes restores the original, formatting included",
+              read(undone) == read(src), read(undone))
+
         def refused(name, edits, *extra, expect="Nothing written"):
             if os.path.exists(out):
                 os.remove(out)
@@ -127,6 +160,11 @@ def main():
                 expect="must be true or false")
         refused("refuses delete: false", [{"find": "Commented", "delete": False}], expect="'delete' must be true")
         refused("refuses an empty replacement", [{"find": "Commented", "replace": ""}], expect="is empty")
+        for bad in (" (‹Id. at 4).", " (Id.› at 4).", " (‹‹Id.›› at 4).", " (‹›Id. at 4)."):
+            refused(f"refuses unmatched, nested, or empty italic markers: {bad!r}",
+                    [{"find": "two shifts", "insert_after": bad}], expect="unmatched or empty italic marker")
+        refused("points to ‹…› when an insertion is combined with italic",
+                [{"find": "two shifts", "insert_after": " (Id. at 4).", "italic": True}], expect="wrap that part in ‹…›")
         refused("points out a non-breaking space the edit missed",
                 [{"find": "U.S.C. \u00a7 2612", "delete": True}], expect="differs in spaces, quotes, or dashes")
 

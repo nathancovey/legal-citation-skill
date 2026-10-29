@@ -40,6 +40,7 @@ If the user asks you to make the fixes in their Word file, follow `references/wo
 - Every change is a **tracked change in the user's name**, never yours.
 - **Never replace a file that's open** in Word. Write a copy instead.
 - **Fix only what's certain.** Leave the "check" items for the user.
+- **Mark italics in inserted text.** Inserted text copies the formatting next to it, so an `Id.` added after roman text comes out roman. Write `" (‹Id.› at 4)."` to italicize only `Id.`
 - Use `scripts/docx_edit.py`, which proves before writing that nothing else in the document changed. Once the user has accepted the changes, confirm with `scripts/docx_read.py --revisions` that none are still pending.
 
 ## Building a citation from a rough reference

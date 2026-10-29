@@ -23,6 +23,11 @@ edits.json is a list. Each edit finds text inside one paragraph and does one thi
     replace "text" | delete true | insert_before "text" | insert_after "text"
     | any of italic / bold / underline: true or false
 
+Inserted text (replace, insert_before, insert_after) takes the formatting of the
+text next to it. To make part of it italic, wrap that part in ‹…›, the markers
+docx_read.py shows: {"find": "two shifts", "insert_after": " (‹Id.› at 4)."}
+inserts "Id." in italics and the rest in roman.
+
 Safety, by design:
   - Every change is a tracked change the user can accept or reject in Word.
   - The author is the user, never the agent: taken from --author, else from the
@@ -60,6 +65,7 @@ PARA = re.compile(r"<w:p(?:\s[^>]*)?>.*?</w:p>", re.S)
 T = re.compile(r"<w:t(?:\s[^>]*)?>(.*?)</w:t>|<w:t(?:\s[^>]*)?/>", re.S)
 CACHE_HINT = re.compile(r"<w:lastRenderedPageBreak/>")
 REVISION = re.compile(r"<w:(?:ins|del|moveFrom|moveTo|rPrChange|pPrChange)\b")
+ITALIC = re.compile("‹([^‹›]+)›")  # italic span inside inserted text, as docx_read.py displays it
 # Order of run properties required by the WordprocessingML schema.
 ORDER = ["rStyle", "rFonts", "b", "bCs", "i", "iCs", "caps", "smallCaps", "strike", "dstrike", "outline",
          "shadow", "emboss", "imprint", "noProof", "snapToGrid", "vanish", "webHidden", "color", "spacing",
@@ -113,6 +119,19 @@ def rpr_children(rpr):
     return kids
 
 
+def set_props(kids, changes):
+    """Turn italic / bold / underline on or off in a list of run properties, in schema order."""
+    for prop, on in changes.items():
+        tags = PROPS[prop]
+        kids = [(n, x) for n, x in kids if n not in {t for t, _ in tags}]
+        if on:
+            for tag, xml in tags:
+                pos = next((k for k, (n, _) in enumerate(kids)
+                            if n in ORDER and ORDER.index(n) > ORDER.index(tag)), len(kids))
+                kids.insert(pos, (tag, xml))
+    return kids
+
+
 class Writer:
     """Builds revision markup with unique ids, author, and date."""
 
@@ -127,14 +146,7 @@ class Writer:
     def formatted(self, rpr, changes):
         kids = rpr_children(rpr)
         old = "".join(x for _, x in kids)
-        for prop, on in changes.items():
-            tags = PROPS[prop]
-            kids = [(n, x) for n, x in kids if n not in {t for t, _ in tags}]
-            if on:
-                for tag, xml in tags:
-                    pos = next((k for k, (n, _) in enumerate(kids)
-                                if n in ORDER and ORDER.index(n) > ORDER.index(tag)), len(kids))
-                    kids.insert(pos, (tag, xml))
+        kids = set_props(kids, changes)
         if "".join(x for _, x in kids) == old:  # already formatted that way: no change to track
             return rpr
         change = f"<w:rPrChange {self.attrs()}><w:rPr>{old}</w:rPr></w:rPrChange>"
@@ -148,13 +160,22 @@ class Writer:
         rpr = self.formatted(run["rpr"], fmt) if mode == "fmt" else run["rpr"]
         return f'{run["open"]}{rpr}<w:t xml:space="preserve">{t}</w:t></w:r>'
 
-    def insertion(self, run, text):
-        return (f'<w:ins {self.attrs()}>{run["open"]}{run["rpr"]}'
-                f'<w:t xml:space="preserve">{escape(text, quote=False)}</w:t></w:r></w:ins>')
+    def insertion(self, run, text, segments=None):
+        """One tracked insertion formatted like `run`; segments [(text, italic)] set italics piece by piece."""
+        pieces = [(run["rpr"], text)]
+        if segments:  # a new run needs no rPrChange: rejecting the insertion removes it whole
+            kids = rpr_children(run["rpr"])
+            pieces = []
+            for t, italic in segments:
+                props = "".join(x for _, x in set_props(kids, {"italic": italic}))
+                pieces.append((f"<w:rPr>{props}</w:rPr>" if props else "", t))
+        runs = "".join(f'{run["open"]}{rpr}<w:t xml:space="preserve">{escape(t, quote=False)}</w:t></w:r>'
+                       for rpr, t in pieces)
+        return f'<w:ins {self.attrs()}>{runs}</w:ins>'
 
 
 def edit_paragraph(pxml, ops, w):
-    """ops: ('del', a, b) | ('fmt', a, b, {prop: bool}) | ('ins', at, text, copy_from)."""
+    """ops: ('del', a, b) | ('fmt', a, b, {prop: bool}) | ('ins', at, text, copy_from, segments)."""
     segs, pos = [], 0
     for m in RUN.finditer(pxml):
         segs += [("raw", pxml[pos:m.start()]), ("run", parse_run(m.group(0)))]
@@ -174,7 +195,7 @@ def edit_paragraph(pxml, ops, w):
     inserts = {}
     for op in ops:
         if op[0] == "ins":
-            inserts.setdefault(op[1], []).append(w.insertion(run_at(op[3]), op[2]))
+            inserts.setdefault(op[1], []).append(w.insertion(run_at(op[3]), op[2], op[4]))
 
     out = []
     for kind, s in segs:
@@ -231,6 +252,19 @@ def fold(text):
                                          "\u201d": '"', "\u2013": "-", "\u2014": "-", "\u2011": "-"}))
 
 
+def italic_segments(text):
+    """Split inserted text on ‹…›: (text without markers, ((piece, italic), ...)), or (text, None) if unmarked."""
+    if not ITALIC.search(text):
+        return text, None
+    segments, pos = [], 0
+    for m in ITALIC.finditer(text):
+        segments += [(text[pos:m.start()], False), (m.group(1), True)]
+        pos = m.end()
+    segments.append((text[pos:], False))
+    segments = tuple((t, i) for t, i in segments if t)
+    return "".join(t for t, _ in segments), segments
+
+
 def plan(edits, paragraphs):
     """Turn edits into per-paragraph ops. paragraphs: list of (key, text)."""
     ops, report = {}, []
@@ -261,8 +295,16 @@ def plan(edits, paragraphs):
         actions = [k for k in ("replace", "delete", "insert_before", "insert_after") if k in e]
         fmt = {k: bool(e[k]) for k in PROPS if k in e}
         if len(actions) + bool(fmt) != 1 or len(actions) > 1:
+            hint = (" — to italicize inserted text, wrap that part in ‹…›"
+                    if e.get("italic") and set(actions) - {"delete"} else "")
             raise EditError(f"{label}: give exactly one action (replace, delete, insert_before, "
-                            f"insert_after) or formatting (italic / bold / underline)")
+                            f"insert_after) or formatting (italic / bold / underline){hint}")
+        inserted, segments = None, None
+        if actions and actions[0] != "delete":
+            if re.search("[‹›]", ITALIC.sub("", e[actions[0]])):
+                raise EditError(f"{label}: '{actions[0]}' has an unmatched or empty italic marker; wrap each "
+                                f"italic part in one pair, as in ‹Id.›")
+            inserted, segments = italic_segments(e[actions[0]])
         target = e.get("target", e["find"])
         if e["find"].count(target) != 1:
             raise EditError(f"{label}: 'target' {target!r} must appear exactly once inside 'find'")
@@ -300,11 +342,11 @@ def plan(edits, paragraphs):
             elif "delete" in e:
                 new = [("del", s, t)]
             elif "replace" in e:
-                new = [("del", s, t), ("ins", t, e["replace"], s)]
+                new = [("del", s, t), ("ins", t, inserted, s, segments)]
             elif "insert_before" in e:
-                new = [("ins", s, e["insert_before"], s)]
+                new = [("ins", s, inserted, s, segments)]
             else:
-                new = [("ins", t, e["insert_after"], t - 1)]
+                new = [("ins", t, inserted, t - 1, segments)]
             for op in new:
                 for other in ops.get(key, []):
                     if op[0] != "ins" and other[0] != "ins" and op[1] < other[2] and other[1] < op[2]:
