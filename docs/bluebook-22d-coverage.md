@@ -153,7 +153,21 @@ The skill follows the specific rule or table over a stray example:
 
 ## Bluebook Uncovered versus the Bluebook
 
-_Pending: filled in from the cross-check below._
+*Bluebook Uncovered* agrees with every contradiction fixed above. It requires parentheticals for *but cf.* and *see generally* (pp. 222–23). It allows closed-up reporter abbreviations under B6, noting that this was new in the 21st edition (p. 24). It puts the period inside parenthesized record citations (p. 101). It flags "(citation modified)" as new in the 22d edition (p. 204). Where it goes beyond or departs from the Bluebook's text:
+
+| Topic | Uncovered | The Bluebook | Skill follows |
+|---|---|---|---|
+| Parenthesized record citations | Be consistent: all court-document citations, "including any corresponding 'id.' citations," in parentheses or none (p. 102). | B17.1.1 tip: citations "may" be enclosed in parentheses. Says nothing about consistency. | Uncovered's consistency rule, labeled as Uncovered's guidance, since it doesn't contradict the Bluebook. An instructor's rule overrides it. |
+| *Id.* for court documents | Example treats `Pet'r's Br. 8-10.` → `Id. at 7.` as fine (p. 100). | Use *id.* "only if significant space will be saved" (B17.2 tip). | The Bluebook's test. *Id.* for a brief title saves a little. *Id.* for `R.` saves nothing. |
+| "at" before pages | `J.A. at 11.` along with `R. at 5-6.` (p. 96). | "at" is customary "in references to certain sources such as appellate records (e.g., R. at 5)" (B17.1.2). | Both: "at" for the Record and Joint Appendix. |
+| Docket-number label | Uses `Dkt. No.` (p. 98) and `ECF No.` (p. 100) interchangeably. | `Dkt. No.` in every B17 example. | `Dkt. No.`, unless a local rule prescribes `ECF No.` |
+| When to re-cite in full | Repeat the full citation at the start of each new issue or section (pp. 99–100). | Only the three B10.2/B17.2 conditions. No section rule. | The Bluebook's conditions. Uncovered's practice is mentioned as the safer choice in long documents (`short-forms.md`). |
+| Signals not needing a parenthetical | "Not required" for *contra* and *but see* (p. 222). | Rule 1.5(a): a parenthetical is required whenever relevance might not be clear, whatever the signal. | The Bluebook ("If relevance is unclear"). |
+| Rule 5.2(f) internal quotation marks | Says to omit them when the quotation is entirely the internal quotation (p. 193). Doesn't mention keeping the "(quoting …)" parenthetical. | Rule 5.2(f)(iii): keep the "(quoting …)" parenthetical anyway. | The Bluebook. |
+| Months | One example prints "Sept." (p. 183). | T12: `Sep.` | T12. |
+| Page ranges | Uses hyphens (`7:14-16`). | En dash or hyphen (B10.1.2, Rule 3.2(a)). | Either. The skill's examples use en dashes. |
+
+Uncovered was checked on these topics: record citations (ch. 6), quotations (ch. 12), signals (ch. 14), reporter spacing (ch. 2), and order of authorities. It was not compared line by line against every Bluebook rule.
 
 ## Deliberately not covered
 

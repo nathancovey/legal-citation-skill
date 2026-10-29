@@ -43,7 +43,7 @@ No case name, court, or year. The reader knows which case it is.
 ### Pinpoints (B17.1.2)
 
 - Cite the precise spot. Never use "p."
-- **Pages take no "at"**, except in record citations, where "at" is customary: `R. at 9.` Also use ", at" after an exhibit or volume designation that would otherwise run into the page number (Rule 3.2(a)): `Travis Decl. Ex. B, at 3.`
+- **Pages take no "at"**, except in citations to an appellate record, such as the Record or Joint Appendix, where "at" is customary: `R. at 9.`, `J.A. at 11.` Also use ", at" after an exhibit or volume designation that would otherwise run into the page number (Rule 3.2(a)): `Travis Decl. Ex. B, at 3.`
 - **Transcripts and depositions:** page and line, separated by a colon: `Clark Dep. 15:21–16:4.` A range across pages repeats the page.
 - Identify other subdivisions with their symbol or abbreviation: `Compl. ¶ 7.`, `Def.'s Aff. ¶¶ 5–7.`, `Trial Tr. vol. 2, 31.`
 - Use commas only to avoid confusion.
@@ -83,7 +83,7 @@ When a document was filed through PACER/ECF or a state e-filing system, add its 
 
 ## Parentheses around court-document citations (B17.1.1 tip)
 
-Citations to court documents **may** be enclosed in parentheses. It's optional. Decide once for the document and do the same for every court-document citation, including *Id.*
+Citations to court documents **may** be enclosed in parentheses. It's optional. Decide once for the document and do the same for every court-document citation, including *Id.* The Bluebook itself says only "may." The all-or-nothing rule is *Bluebook Uncovered*'s guidance (22d ed., p. 102). The skill follows it because a mix reads as a mistake. An instructor's or court's own instruction overrides both.
 
 When you use them, the parentheses enclose the whole citation sentence, **period included**. The B17 example: `(Def.'s Resp. to Pl.'s Interrog. No. 3.)`
 
@@ -192,7 +192,7 @@ Record citations are positional like any short form. In document order, flag:
 - parentheses used for some court-document citations and not others,
 - a period outside the closing parenthesis, or a parenthesized citation inside the sentence it supports,
 - `Id.` for the record or another short title where it saves no space,
-- "at" before the page of a document other than the record (`Pet'r's Br. at 6`), or "p.",
+- "at" before the page of a document other than the appellate record (`Pet'r's Br. at 6`), or "p.",
 - a deposition or transcript cite without page:line,
 - a date added where B17.1.3 doesn't call for it, or missing where two documents share a title,
 - a docket number missing from an electronically filed document, or one you can't trace to the docket,
