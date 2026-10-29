@@ -1,6 +1,8 @@
 # Legal Citation Skill
 
-A skill for AI agents that writes, checks, and corrects U.S. legal citations: full and short case citations, *Id.*, signals, explanatory parentheticals, quotations, pincites, and italics, for memos, briefs, and law review footnotes.
+A skill for AI agents that writes, checks, and corrects U.S. legal citations: full and short case citations, *Id.*, record and court-document citations, statutes and other sources, signals, explanatory parentheticals, quotations, pincites, and italics, for memos, briefs, and law review footnotes.
+
+It follows **The Bluebook: A Uniform System of Citation (22d ed. 2025)**, in both its styles: the Bluepages for briefs and memos, and the Whitepages for law review footnotes. If it can't tell which one your document uses, it asks. Every rule in it cites the Bluebook rule it comes from. Where a study guide or an older edition says otherwise, it follows the Bluebook. New 22d-edition rules are covered, such as "(citation modified)" replacing "(internal quotation marks omitted)." `docs/bluebook-22d-coverage.md` maps every Bluepages rule, and the Whitepages rules practitioners use, to where the skill covers it.
 
 Its first principle: **an agent must never invent a number.** Every volume, page, pincite, and year is traced to a source the agent can see, or left as `___` and flagged.
 
@@ -95,13 +97,15 @@ plugins/legal-citation/skills/legal-citation/
 ├── SKILL.md                         workflow, the five rules, reporting format
 ├── VERSION
 ├── references/
-│   ├── case-citations.md            full citations, case names, courts, reporters, pincites
-│   ├── short-forms.md               short citations and Id.
+│   ├── case-citations.md            full citations, case names, courts, reporters, pincites, history
+│   ├── short-forms.md               short citations, Id., the five-footnote rule
+│   ├── court-documents.md           the record and court documents (Bluepages B17, BT1)
+│   ├── statutes-and-other-sources.md  constitutions, statutes, rules, regulations, books, articles, websites
 │   ├── signals-and-parentheticals.md
-│   ├── quotations.md                block quotes, ellipses, brackets, candor
-│   ├── typeface-and-placement.md    italics; citation sentences vs. clauses
+│   ├── quotations.md                block quotes, ellipses, brackets, (citation modified), candor
+│   ├── typeface-and-placement.md    Bluepages vs. Whitepages typeface; sentences vs. clauses
 │   ├── verification.md              sourcing numbers, star pagination, looking cases up online
-│   ├── abbreviations.md             case-name words, states, reporters, courts
+│   ├── abbreviations.md             case-name words, places, reporters, courts, months, numerals
 │   ├── word-documents.md            fixing a Word file safely, as tracked changes
 │   └── LICENSE-reporters-db.txt
 └── scripts/
@@ -136,10 +140,10 @@ python3 scripts/docx_edit.py memo.docx edits.json -o "memo (edited).docx"
 
 ## Scope
 
-Case citations are covered in depth. For statutes, regulations, books, articles, and websites, the skill applies the same verification discipline and defers to the user's style guide for form. Court rules, instructors, and firm style guides always override it.
+Cases, short forms, record citations, signals, parentheticals, quotations, and typeface are covered in depth under the Bluebook (22d ed. 2025). Constitutions, statutes, rules, regulations, legislative materials, books, articles, and websites are covered in their Bluepages forms. Foreign, international, tribal, and archival sources are outlined only. Court rules, instructors, and firm style guides always override it.
 
 This is a writing aid, not legal advice. Check citations against the rules your court or institution requires.
 
 ## License
 
-MIT. The abbreviation lists are derived from Free Law Project's [reporters-db](https://github.com/freelawproject/reporters-db) under its BSD 3-Clause license.
+MIT. The abbreviation lists are derived from Free Law Project's [reporters-db](https://github.com/freelawproject/reporters-db) under its BSD 3-Clause license, corrected against the Bluebook's tables. The Bluebook is a trademark of its publishers; this project is not affiliated with them, and the skill states the rules in its own words.

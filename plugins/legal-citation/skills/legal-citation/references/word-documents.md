@@ -40,7 +40,7 @@ A JSON list. Each edit finds text inside one paragraph and does one thing.
 | `occurrence` | Which match to use, counting from 1. Without it, `find` must match exactly once. |
 | `all` | `true` to apply to every match. |
 | Action | Exactly one of: `replace`: "text", `delete`: true, `insert_before`: "text", `insert_after`: "text", or any of `italic` / `bold` / `underline`: true or false. |
-| `‹…›` in inserted text | Marks the italic part of `replace`, `insert_before`, or `insert_after` text: `" (‹Id.› at 4)."` inserts *Id.* in italics and the rest in roman. Without markers, inserted text takes the formatting of the text next to it. |
+| `‹…›` in inserted text | Marks the italic part of `replace`, `insert_before`, or `insert_after` text: `" ‹Id.› at 874."` inserts *Id.* in italics and the rest in roman. Without markers, inserted text takes the formatting of the text next to it. |
 
 An `Id.` inserted after roman text would otherwise come out roman, and it can't be fixed afterward: an insertion can't be combined with `italic`: true, and the script won't edit a paragraph that has pending changes. So mark italics in the same edit, with the marker `docx_read.py` shows. Once any part is marked, every unmarked part is roman, even next to italic text. Unmatched, nested, or empty markers are refused. Several insertions at the same spot appear in the order the edits are listed.
 
@@ -56,12 +56,13 @@ Typical citation fixes:
   {"find": "aff'd sub nom.", "italic": true},
   {"find": "Jonse", "replace": "Jones", "all": true},
   {"in": "In the present case", "find": "; see Smith", "target": "see ", "delete": true},
-  {"find": "missed two shifts.", "target": ".", "insert_before": " (‹Id.› at 4)"},
+  {"find": "missed two shifts (R. at 4).", "replace": "missed two shifts. (R. at 4.)"},
+  {"find": "was not in custody.", "insert_after": " ‹Id.› at 874."},
   {"find": "Smith held", "target": "Smith", "replace": "‹Smith›, 721 F.3d at 12,"}
 ]
 ```
 
-These do, in order: italicize a case name through "Inc."; take italics off the comma after a case name; add a missing reporter; add a missing space after *Id.*; add a missing period; italicize a history phrase; fix a misspelled name everywhere; drop a repeated signal in one paragraph; add a record citation with only *Id.* italic; and expand a bare case name into a short citation with only the name italic.
+These do, in order: italicize a case name through "Inc."; take italics off the comma after a case name; add a missing reporter; add a missing space after *Id.*; add a missing period; italicize a history phrase; fix a misspelled name everywhere; drop a repeated signal in one paragraph; move a parenthesized record citation out of the sentence, with its period inside the parentheses (B17); add an *Id.* citation with only *Id.* italic; and expand a bare case name into a short citation with only the name italic.
 
 ## Limits
 
